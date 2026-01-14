@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "src/server.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["wasm/**", "src/**"]
+      }
     }
   ],
   "routes": [
@@ -11,9 +14,5 @@
       "src": "/(.*)",
       "dest": "src/server.js"
     }
-  ],
-  "includeFiles": [
-    "wasm/**",
-    "src/**"
   ]
 }
