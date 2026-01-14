@@ -241,6 +241,95 @@ app.get('/health', (req, res) => {
     res.json(health);
 });
 
+// Status Endpoint (Detailed Diagnostics)
+app.get('/status', (req, res) => {
+    const poolStatus = DeepSeek.getTokenPoolStatus();
+    const keepAliveStatus = DeepSeek.getKeepAliveStatus();
+    const uptime = Math.floor((Date.now() - startTime) / 1000);
+    
+    // Format uptime
+    const days = Math.floor(uptime / 86400);
+    const hours = Math.floor((uptime % 86400) / 3600);
+    const minutes = Math.floor((uptime % 3600) / 60);
+    const seconds = uptime % 60;
+    const uptimeFormatted = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    
+    // Check environment variables
+    const envStatus = {
+        DEEPSEEK_AUTHTOKEN: process.env.DEEPSEEK_AUTHTOKEN ? '✅ Set' : '❌ Not Set',
+        API_KEY: process.env.API_KEY ? '✅ Set' : '❌ Not Set',
+        KEEP_ALIVE_INTERVAL: process.env.KEEP_ALIVE_INTERVAL || '60 (default)',
+        PORT: process.env.PORT || '3000 (default)',
+        NODE_ENV: process.env.NODE_ENV || 'development'
+    };
+    
+    // Overall health status
+    const hasToken = DeepSeek.hasAuthToken();
+    const hasApiKey = !!process.env.API_KEY;
+    const overallStatus = hasToken && hasApiKey ? '✅ Healthy' : 
+                         hasToken ? '⚠️ Degraded (No API Key)' : 
+                         '❌ Unhealthy (No DeepSeek Token)';
+    
+    // Available models
+    const models = DeepSeek.getModels();
+    
+    // Build status response
+    const status = {
+        service: 'DeepSeek OpenAI-Compatible API',
+        version: '1.0.0',
+        status: overallStatus,
+        timestamp: new Date().toISOString(),
+        uptime: {
+            seconds: uptime,
+            formatted: uptimeFormatted
+        },
+        environment: envStatus,
+        deepseek: {
+            tokenConfigured: hasToken,
+            tokenPool: poolStatus,
+            keepAlive: keepAliveStatus,
+            models: models
+        },
+        api: {
+            apiKeyConfigured: hasApiKey,
+            endpoints: [
+                'POST /v1/chat/completions',
+                'GET /v1/models',
+                'GET /v1/models/:model',
+                'GET /health',
+                'GET /status'
+            ]
+        },
+        platform: {
+            node: process.version,
+            platform: process.platform,
+            arch: process.arch,
+            memory: {
+                used: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
+                total: `${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)}MB`
+            }
+        }
+    };
+    
+    // Add warnings if needed
+    const warnings = [];
+    if (!hasToken) {
+        warnings.push('DEEPSEEK_AUTHTOKEN environment variable is not set');
+    }
+    if (!hasApiKey) {
+        warnings.push('API_KEY environment variable is not set (authentication disabled)');
+    }
+    if (keepAliveStatus.enabled && keepAliveStatus.interval === 0) {
+        warnings.push('Keep-alive is disabled (KEEP_ALIVE_INTERVAL=0)');
+    }
+    
+    if (warnings.length > 0) {
+        status.warnings = warnings;
+    }
+    
+    res.json(status);
+});
+
 // Graceful Shutdown
 process.on('SIGTERM', () => {
     console.log('\n⚠️  SIGTERM received, shutting down gracefully...');
@@ -259,6 +348,7 @@ app.listen(PORT, async () => {
     await init();
     console.log(`\n🚀 OpenAI-Compatible Server running at http://localhost:${PORT}`);
     console.log(`👉 Chat: http://localhost:${PORT}/v1/chat/completions`);
+    console.log(`👉 Models: http://localhost:${PORT}/v1/models`);
     console.log(`👉 Health: http://localhost:${PORT}/health`);
-    console.log(`👉 Models: http://localhost:${PORT}/v1/models\n`);
+    console.log(`👉 Status: http://localhost:${PORT}/status\n`);
 });
