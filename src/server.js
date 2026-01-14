@@ -256,8 +256,12 @@ app.get('/status', (req, res) => {
     
     // Check environment variables
     const envStatus = {
-        DEEPSEEK_AUTHTOKEN: process.env.DEEPSEEK_AUTHTOKEN ? '✅ Set' : '❌ Not Set',
-        API_KEY: process.env.API_KEY ? '✅ Set' : '❌ Not Set',
+        DEEPSEEK_AUTHTOKEN: process.env.DEEPSEEK_AUTHTOKEN ? 
+            `✅ Set (${process.env.DEEPSEEK_AUTHTOKEN.substring(0, 20)}...)` : 
+            '❌ Not Set',
+        API_KEY: process.env.API_KEY ? 
+            `✅ Set (${process.env.API_KEY})` : 
+            '❌ Not Set',
         KEEP_ALIVE_INTERVAL: process.env.KEEP_ALIVE_INTERVAL || '60 (default)',
         PORT: process.env.PORT || '3000 (default)',
         NODE_ENV: process.env.NODE_ENV || 'development'
@@ -343,12 +347,30 @@ process.on('SIGINT', () => {
     process.exit(0);
 });
 
-// Start Server
-app.listen(PORT, async () => {
-    await init();
-    console.log(`\n🚀 OpenAI-Compatible Server running at http://localhost:${PORT}`);
-    console.log(`👉 Chat: http://localhost:${PORT}/v1/chat/completions`);
-    console.log(`👉 Models: http://localhost:${PORT}/v1/models`);
-    console.log(`👉 Health: http://localhost:${PORT}/health`);
-    console.log(`👉 Status: http://localhost:${PORT}/status\n`);
-});
+// Initialize on startup (for serverless)
+let initialized = false;
+async function ensureInitialized() {
+    if (!initialized) {
+        await init();
+        initialized = true;
+    }
+}
+
+// For Vercel serverless - export the app
+export default async function handler(req, res) {
+    await ensureInitialized();
+    return app(req, res);
+}
+
+// For local/Render - start server if not in serverless environment
+if (process.env.VERCEL !== '1' && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    app.listen(PORT, async () => {
+        await init();
+        console.log(`\n� OpenAI-Compatible Server running at http://localhost:${PORT}`);
+        console.log(`👉 Chat: http://localhost:${PORT}/v1/chat/completions`);
+        console.log(`👉 Models: http://localhost:${PORT}/v1/models`);
+        console.log(`👉 Health: http://localhost:${PORT}/health`);
+        console.log(`👉 Status: http://localhost:${PORT}/status\n`);
+    });
+}
+

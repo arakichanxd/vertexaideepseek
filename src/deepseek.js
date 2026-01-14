@@ -88,6 +88,7 @@ export default class DeepSeek {
 
         // First token (no number suffix)
         const firstToken = getEnv('DEEPSEEK_AUTHTOKEN');
+        console.log('🔍 Debug: DEEPSEEK_AUTHTOKEN =', firstToken ? `${firstToken.substring(0, 20)}...` : 'null');
         if (firstToken) tokens.push(firstToken);
 
         // Numbered tokens (1, 2, 3, ...)
@@ -104,6 +105,10 @@ export default class DeepSeek {
             this.tokenPool = tokens;
             this.authToken = tokens[0];
             console.log(`✅ Loaded ${tokens.length} DeepSeek token(s) from environment`);
+            console.log(`🔍 Debug: authToken set to ${this.authToken ? this.authToken.substring(0, 20) + '...' : 'null'}`);
+            console.log(`🔍 Debug: tokenPool length = ${this.tokenPool.length}`);
+        } else {
+            console.log('⚠️  No DeepSeek tokens found in environment');
         }
 
         // Load user API keys (API_KEY, API_KEY1, API_KEY2, ...)
