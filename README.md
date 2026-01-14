@@ -217,7 +217,81 @@ List available models.
 
 ### GET /health
 
-Health check with keep-alive status.
+Quick health check with basic status.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "uptime": 3600,
+  "tokenPool": {
+    "totalTokens": 1,
+    "currentIndex": 0
+  },
+  "keepAlive": {
+    "enabled": true,
+    "interval": 30,
+    "lastPing": "2026-01-14T10:30:00.000Z"
+  }
+}
+```
+
+### GET /status
+
+Detailed diagnostics and configuration status.
+
+**Response:**
+```json
+{
+  "service": "DeepSeek OpenAI-Compatible API",
+  "version": "1.0.0",
+  "status": "✅ Healthy",
+  "timestamp": "2026-01-14T10:30:00.000Z",
+  "uptime": {
+    "seconds": 3600,
+    "formatted": "0d 1h 0m 0s"
+  },
+  "environment": {
+    "DEEPSEEK_AUTHTOKEN": "✅ Set",
+    "API_KEY": "✅ Set",
+    "KEEP_ALIVE_INTERVAL": "30",
+    "PORT": "3000",
+    "NODE_ENV": "production"
+  },
+  "deepseek": {
+    "tokenConfigured": true,
+    "tokenPool": {
+      "totalTokens": 1,
+      "currentIndex": 0
+    },
+    "keepAlive": {
+      "enabled": true,
+      "interval": 30,
+      "lastPing": "2026-01-14T10:30:00.000Z"
+    },
+    "models": ["deepseek-v3", "deepseek-r1"]
+  },
+  "api": {
+    "apiKeyConfigured": true,
+    "endpoints": [
+      "POST /v1/chat/completions",
+      "GET /v1/models",
+      "GET /v1/models/:model",
+      "GET /health",
+      "GET /status"
+    ]
+  },
+  "platform": {
+    "node": "v20.10.0",
+    "platform": "linux",
+    "arch": "x64",
+    "memory": {
+      "used": "45MB",
+      "total": "128MB"
+    }
+  }
+}
+```
 
 ## 🔐 Token Management
 
