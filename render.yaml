@@ -1,0 +1,15 @@
+# Render.com deployment configuration
+services:
+  - type: web
+    name: deepseek-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: KEEP_ALIVE_INTERVAL
+        value: "30"

@@ -1,0 +1,40 @@
+{
+    "name": "deepseek-api",
+    "version": "1.0.0",
+    "description": "100% OpenAI-compatible proxy for DeepSeek Chat API",
+    "type": "module",
+    "main": "src/server.js",
+    "scripts": {
+        "start": "node src/server.js",
+        "dev": "node src/server.js",
+        "test": "node tests/test.js",
+        "test:openai": "node tests/test-openai.js",
+        "test:system": "node tests/test-system-prompt.js",
+        "test:compat": "node tests/test-openai-compatibility.js",
+        "test:keepalive": "node tests/test-keepalive.js",
+        "test:live": "node tests/test-live-deployment.js",
+        "test:all": "npm test && npm run test:system && npm run test:compat",
+        "validate": "node validate-env.js"
+    },
+    "dependencies": {
+        "axios": "^1.6.0",
+        "body-parser": "^2.2.2",
+        "cors": "^2.8.5",
+        "dotenv": "^17.2.3",
+        "express": "^5.2.1",
+        "openai": "^6.16.0"
+    },
+    "keywords": [
+        "deepseek",
+        "openai",
+        "api",
+        "ai",
+        "chat",
+        "deepthink",
+        "r1",
+        "proxy"
+    ],
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
